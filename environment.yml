@@ -1,0 +1,17 @@
+name: safe_rl
+channels: 
+  - anaconda
+  - conda-forge
+  - pytorch
+dependencies:
+  - python
+  - numpy
+  - scipy
+  - cython
+  - pytorch
+  - pytest
+  - pytest-runner
+  - pytest-xdist
+  - pip:
+      - .
+
