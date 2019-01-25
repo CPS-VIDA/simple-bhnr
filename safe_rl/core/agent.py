@@ -17,3 +17,6 @@ class BaseAgent(ABC):
         """
         pass
 
+    @abstractmethod
+    def act(self, obs)
+
