@@ -1,9 +1,17 @@
 """Define basic memory"""
 
-from collections import deque
-
-
 from abc import ABC, abstractmethod
+
+from typing import NamedTuple
+from collections import deque, namedtuple
+
+import numpy as np
+
+Transition = namedtuple(
+    'Transition', ('state', 'action', 'reward', 'next_state', 'done'))
+
+QTransition = namedtuple(
+    'QTransition', ('q',) + Transition._fields)
 
 
 class BaseMemory(ABC):
@@ -40,11 +48,6 @@ class BaseMemory(ABC):
 
     @abstractmethod
     def reset(self):
-        pass
-
-    @property
-    @abstractmethod
-    def size(self):
         pass
 
     @property

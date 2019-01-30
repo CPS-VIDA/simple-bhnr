@@ -7,16 +7,19 @@ from abc import ABC, abstractmethod
 from enum import Enum, auto
 
 
-class Msg(Enum):
+class Event(Enum):
     BEGIN_TRAINING = auto()
     BEGIN_EPISODE = auto()
     STEP = auto()
-    LEARN = auto()
+    BEGIN_LEARN = auto()
+    SYNC = auto()
+    END_LEARN = auto()
     END_EPISODE = auto()
     END_TRAINING = auto()
 
 
 class BaseObserver(ABC):
+    agent = None
 
     @abstractmethod
     def attach(self, agent_or_actor):
