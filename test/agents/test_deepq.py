@@ -1,55 +1,75 @@
 import copy
 
-from safe_rl.agents.deepq import DQN
 import torch
 import torch.nn as nn
 
-HYPERPARAMS = dict(
-    gamma=0.95,
+from safe_rl.agents.deepq import DQN
+from safe_rl.experiments.trial import trial_runner
 
-    lr=0.001,
+AGENT_CONFIG = dict(
+    env_id='CartPole-v1',
+    name='default',
+    n_trials=8,
+    n_episodes=1000,
+    n_eval_episodes=20,
+    render=False,
+    save_dir='data',
+    backup_dir='backups',
+    backup_interval=100,
+    device=(torch.device('cuda')
+            if torch.cuda.is_available() else torch.device('cpu')),
+    net=nn.Sequential(
+        nn.Linear(4, 24), nn.ReLU(),
+        nn.Linear(24, 24), nn.ReLU(),
+        nn.Linear(24, 2)
+    ),
+    hyperparams=dict(
+        gamma=0.95,
 
-    batch_size=32,
+        lr=0.001,
 
-    double_q=False,
-    target_net=False,
-    target_update=15,
+        batch_size=32,
 
-    memory_size=2000,
-    memory_type='uniform',  # or per
+        double_q=False,
+        target_net=False,
+        target_update=15,
 
-    epsilon_greedy=True,
-    epsilon=1.0,
-    epsilon_min=0.1,
-    epsilon_decay=0.95,
+        memory_size=2000,
+        memory_type='uniform',  # or per
+
+        epsilon_greedy=True,
+        epsilon=1.0,
+        epsilon_min=0.1,
+        epsilon_decay=0.95,
+    )
 )
 
-NET = nn.Sequential(
-    nn.Linear(4, 24), nn.ReLU(),
-    nn.Linear(24, 24), nn.ReLU(),
-    nn.Linear(24, 2)
-)
 
-N_EPISODES = 200
+def gen_agent(conf):
+    conf = conf.copy()
+    env_id = conf.pop('env_id')
+    net = copy.deepcopy(conf.pop('net'))
+    hyp = conf.pop('hyperparams')
+    return DQN(env_id, hyp, net, **conf)
 
 
 def test_cartpole_deepq_uniform_notargetfix():
-    hyp = {}
-    net = copy.deepcopy(NET)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device = torch.device(device)
-    agent = DQN('CartPole-v1', hyp, net, device=device)
-    agent.train(N_EPISODES, render=True)
+    hyp = dict()
+    config = AGENT_CONFIG.copy()
+    config['name'] = 'cartpole/vanilla_deepq_uniform_notargetfix'
+    config['hyperparams'].update(hyp)
+    trial_runner(gen_agent, config)
+
 
 def test_cartpole_deepq_uniform_doubleq():
     hyp = dict(
         double_q=True,
     )
-    net = copy.deepcopy(NET)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device = torch.device(device)
-    agent = DQN('CartPole-v1', hyp, net, device=device)
-    agent.train(N_EPISODES, render=True)
+    config = AGENT_CONFIG.copy()
+    config['name'] = 'cartpole/vanilla_deepq_uniform_doubleq'
+    config['hyperparams'].update(hyp)
+    trial_runner(gen_agent, config)
+
 
 if __name__ == "__main__":
     # test_cartpole_deepq_uniform_doubleq()

@@ -5,7 +5,7 @@ class Config:
     name = 'default'
 
     @staticmethod
-    def agent_fn(env, config): return None
+    def agent_fn(env, ): return None
 
     @staticmethod
     def env_fn(): return None
@@ -33,11 +33,6 @@ class Config:
 
     @staticmethod
     def net_fn(): return None
-
-    @staticmethod
-    def memory_fn(): return None
-
-    hyperparams = dict()
 
     device = (torch.device('cuda')
               if torch.cuda.is_available() else torch.device('cpu'))

@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as Fn
 import torch.optim as optim
+
 from safe_rl.core.agent import BaseAgent
 from safe_rl.core.observers import Event
 from safe_rl.memory import (PrioritizedMemory, QTransition, Transition,
@@ -48,7 +49,7 @@ class DQN(BaseAgent):
         :param model: NN architecture for DQN
         :type model: nn.Module
         """
-        super(DQN, self).__init__(env, hyperparams)
+        super(DQN, self).__init__(env, hyperparams, **kwargs)
 
         self.gamma = self.hyp['gamma']
         self.batch_size = self.hyp['batch_size']
@@ -86,11 +87,8 @@ class DQN(BaseAgent):
             raise ValueError('Incompatible memory type: {}'.format(mem_type))
 
         self.loss_fn = kwargs.get('loss_fn', Fn.mse_loss)
-        optim_fn = kwargs.get(
-            'optimizer_fn', lambda params: optim.Adam(params))
+        optim_fn = kwargs.get('optim_fn', lambda params: optim.Adam(params))
         self.optimizer = optim_fn(self.policy_net.parameters())
-
-        device = kwargs.get('device', 'cpu')
 
         self.episode_count = 0
         self.episode_rewards = deque()
@@ -172,7 +170,7 @@ class DQN(BaseAgent):
         if self.target_net:
             self.target_net.to(torch_device)
 
-    def train(self, n_episodes, render=False):
+    def run_training(self, n_episodes, render=False):
         self.broadcast(Event.BEGIN_TRAINING)
         for ep in range(n_episodes):
             self.train_episode(render)
@@ -210,3 +208,37 @@ class DQN(BaseAgent):
         self.episode_durations.append(t)
         self.episode_rewards.append(total_reward)
         self.broadcast(Event.END_EPISODE)
+
+    def run_eval(self, n_episodes, render=False):
+        self.eval()
+        for ep in range(n_episodes):
+            pass
+
+    def eval_episode(self, render=False):
+        total_reward = 0
+        state = self.env.reset()
+
+        t = 0
+        done = False
+        while not done:
+            if render:
+                self.env.render()
+            action = self.act(state)
+            obs, rew, done, _ = self.env.step(action)
+            total_reward += rew
+            t += 1
+            state = obs
+        
+        self.episode_rewards.append(total_reward)
+
+    def save_net(self, filepath):
+        torch.save(self.policy_net.state_dict(), filepath)
+
+    def load_net(self, filepath):
+        self.policy_net.load_state_dict(torch.load(filepath))
+
+    def eval(self):
+        self.policy_net.eval()
+
+    def train(self):
+        self.policy_net.train()

@@ -47,7 +47,7 @@ def test_cartpole_deepq_uniform_notargetfix_stl():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     device = torch.device(device)
     agent = DQN('CartPole-v1', hyp, net, device=device)
-    agent.train(N_EPISODES, render=True)
+    agent.run_training(N_EPISODES, render=True)
 
 
 def test_cartpole_deepq_uniform_doubleq_stl():
@@ -62,7 +62,7 @@ def test_cartpole_deepq_uniform_doubleq_stl():
     monitor = FilteringMonitor(SPEC, SIGNALS)
     agent.attach(STLRewarder(monitor, 15))
 
-    agent.train(N_EPISODES, render=True)
+    agent.run_training(N_EPISODES, render=True)
 
 
 if __name__ == "__main__":
