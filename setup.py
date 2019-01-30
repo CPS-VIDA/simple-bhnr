@@ -15,7 +15,7 @@ REQUIRED_PKGS = [
     "torch",
     "torchvision",
     "sympy",
-    'temporal_logic @ https://github.com/anand-bala/tl-py/archive/v0.1.1.zip'
+    'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip'
 ]
 
 

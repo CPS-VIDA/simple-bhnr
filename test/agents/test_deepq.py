@@ -52,4 +52,5 @@ def test_cartpole_deepq_uniform_doubleq():
     agent.train(N_EPISODES, render=True)
 
 if __name__ == "__main__":
-    test_cartpole_deepq_uniform_doubleq()
+    # test_cartpole_deepq_uniform_doubleq()
+    test_cartpole_deepq_uniform_notargetfix()

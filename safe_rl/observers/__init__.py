@@ -16,10 +16,7 @@ class EpsilonGreedyUpdater(BaseObserver):
 
     def notify(self, msg):
         if msg is Event.END_EPISODE:
-            eps = self.agent.epsilon
-            if eps > self.epsilon_min:
-                eps *= np.exp(-self.epsilon_decay)
-            self.agent.epsilon = eps
+            self.agent.epsilon = max(self.epsilon_min, self.agent.epsilon * self.epsilon_decay)
 
 
 class TargetUpdater(BaseObserver):

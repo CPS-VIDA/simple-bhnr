@@ -93,7 +93,7 @@ class DQN(BaseAgent):
         device = kwargs.get('device', 'cpu')
 
         self.episode_count = 0
-        self.episodic_rewards = deque()
+        self.episode_rewards = deque()
         self.episode_durations = deque()
 
     def observe(self, state, action, reward, next_state, done):
@@ -120,7 +120,7 @@ class DQN(BaseAgent):
 
     def _q_update(self, transition):
         states, actions, rewards, next_states, final_states = transition
-        if self.target_net:
+        if self.hyp['target_net']:
             if self.hyp['double_q']:
                 policy_next_q = self.policy_net(next_states)
                 argmax_policy_q = policy_next_q.max(1)[1].unsqueeze(1)
@@ -154,7 +154,7 @@ class DQN(BaseAgent):
             return
         self.broadcast(Event.BEGIN_LEARN)
 
-        if self.hyp['per']:
+        if self.hyp['memory_type'] == 'per':
             err = torch.abs(predicted - target).detach()
             idxs, weights = self.memory.last_idx_weights
             for i, idx in enumerate(idxs):
@@ -176,8 +176,16 @@ class DQN(BaseAgent):
         self.broadcast(Event.BEGIN_TRAINING)
         for ep in range(n_episodes):
             self.train_episode(render)
+            duration, total_reward = self.episode_durations[-1], self.episode_rewards[-1]
+            print('[{:{width}d}/{:d}] Duration: {:6d}, Score: {:6.2f}, Epsilon: {:.2f}'.format(
+                ep,
+                n_episodes,
+                duration,
+                total_reward,
+                self.epsilon,
+                width=len(str(n_episodes))))
         self.broadcast(Event.END_TRAINING)
-        return self.episode_durations, self.episodic_rewards
+        return self.episode_durations, self.episode_rewards
 
     def train_episode(self, render=False):
         self.broadcast(Event.BEGIN_EPISODE)
@@ -191,14 +199,14 @@ class DQN(BaseAgent):
                 self.env.render()
             action = self.act(state)
             obs, rew, done, _ = self.env.step(action)
+            self.observe(state, action, rew, obs, done)
             self.broadcast(Event.STEP)
             total_reward += rew
             t += 1
             state = obs
             output, target = self.replay()
             self.learn(output, target)
-
         self.episode_count += 1
         self.episode_durations.append(t)
-        self.episodic_rewards.append(t)
+        self.episode_rewards.append(total_reward)
         self.broadcast(Event.END_EPISODE)

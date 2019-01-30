@@ -22,6 +22,8 @@ class PartialSignal(BaseMemory):
 
         self._capacity = agent_mem.capacity
 
+        self.episode_rewards = 0
+
 
     def update(self, *args):
         self.agent_mem.update(args)
@@ -47,12 +49,14 @@ class PartialSignal(BaseMemory):
             unzipped.next_state,
             unzipped.done,
         )
+
+        self.episode_rewards += np.sum(R)
         for tr in zip(*t_list):
             self.agent_mem.push(Transition(*tr))
         self.buffer.clear()
 
     def sample(self, size):
-        self.agent_mem.sample(size)
+        return self.agent_mem.sample(size)
 
     def __len__(self):
         return len(self.agent_mem)
@@ -70,7 +74,7 @@ class PartialSignal(BaseMemory):
 
     def reset(self):
         self.buffer.clear()
-        self.agent_mem.reset()
+        return self.agent_mem.reset()
 
     @property
     def capacity(self):
@@ -102,3 +106,13 @@ class STLRewarder(BaseObserver):
             # DONE: Actor Critic/Async handling
             # TODO: Check if this is enough
             self.psig._flush()
+        elif msg is Event.END_EPISODE:
+            try:
+                self.agent.episode_rewards[-1] = self.psig.episode_rewards
+            except:
+                self.agent.episode_rewards = deque()
+                self.agent.episode_rewards.append(self.psig.episode_rewards)
+            finally:
+                self.psig.episode_rewards = 0
+
+

@@ -10,7 +10,7 @@ python = ">=3.6"
 gym = "^0.10.9"
 torch = "^1.0"
 scipy = "^1.2"
-temporal_logic = {git = "https://github.com/anand-bala/tl-py", tag="v0.1.1"}
+temporal_logic = {git = "https://github.com/anand-bala/tl-py"}
 dataclasses = "^0.6.0"
 
 [tool.poetry.dev-dependencies]

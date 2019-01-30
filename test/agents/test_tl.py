@@ -1,6 +1,7 @@
 import copy
 
 import temporal_logic.signal_tl as stl
+import numpy as np
 import torch
 import torch.nn as nn
 from safe_rl.agents.deepq import DQN
@@ -35,18 +36,18 @@ NET = nn.Sequential(
 
 SIGNALS = ('x', 'x_dot', 'theta', 'theta_dot')
 x, x_dot, theta, theta_dot = stl.signals(SIGNALS)
-SPEC = stl.G(stl.F(x_dot < abs(0.01)) & (abs(theta) < 5) & (abs(x) < 0.5))
+SPEC = stl.G(stl.F(x_dot < abs(0.01)) & (abs(theta) < 5) & (abs(x) < 0.5) & stl.F(abs(theta) < 1))
 
 N_EPISODES = 200
 
 
-# def test_cartpole_deepq_uniform_notargetfix_stl():
-#     hyp = {}
-#     net = copy.deepcopy(NET)
-#     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-#     device = torch.device(device)
-#     agent = DQN('CartPole-v1', hyp, net, device=device)
-#     agent.train(N_EPISODES, render=True)
+def test_cartpole_deepq_uniform_notargetfix_stl():
+    hyp = {}
+    net = copy.deepcopy(NET)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = torch.device(device)
+    agent = DQN('CartPole-v1', hyp, net, device=device)
+    agent.train(N_EPISODES, render=True)
 
 
 def test_cartpole_deepq_uniform_doubleq_stl():
