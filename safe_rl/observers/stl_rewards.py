@@ -18,7 +18,7 @@ class PartialSignal(BaseMemory):
         self.max_len = max_len
         self.monitor = monitor
         self.agent_mem = agent_mem
-        self.buffer = deque(max_len)
+        self.buffer = deque(maxlen=max_len)
 
         self._capacity = agent_mem.capacity
 
@@ -87,8 +87,10 @@ class STLRewarder(BaseObserver):
         self.step_counter = 0
 
     def attach(self, agent):
-        if agent.rollout_len:
+        try: 
             self.partial_sig_len = min(self.partial_sig_len, agent.rollout_len)
+        except:
+            pass
         
         self.agent_mem = agent.memory
         self.psig = PartialSignal(self.partial_sig_len, self.monitor, self.agent_mem)
