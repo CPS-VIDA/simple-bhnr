@@ -9,6 +9,7 @@ import torch.nn as nn
 
 from safe_rl.core.agent import BaseAgent
 from safe_rl.observers.checkpoints import EpisodicCheckpointSaver
+from safe_rl.utils.general import set_global_seed
 
 import pandas as pd
 from datetime import datetime
@@ -24,8 +25,10 @@ def trial_runner(agent_fn, conf: dict):
     backup_dir = conf['backup_dir']
     backup_interval = conf['backup_interval']
     device = conf['device']
+    seed_fn = conf.get('seed_fn', lambda cur_seed: 0 if cur_seed is None else cur_seed + 1)
 
     for trial in range(n_trials):
+        conf['seed'] = seed_fn(conf.get('seed'))
         trial_num_str = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         trial_dir = os.path.join(save_dir, name)
         checkpoint_dir = os.path.join(backup_dir, name, trial_num_str)

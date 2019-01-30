@@ -3,6 +3,7 @@ from collections import deque
 
 import torch
 import gym
+from safe_rl.utils.general import set_global_seed
 
 
 class BaseAgent(ABC):
@@ -22,6 +23,8 @@ class BaseAgent(ABC):
         tmp_dev = torch.device(
             'cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.device = kwargs.get('device', tmp_dev)
+
+        self.seed(kwargs.get('seed'))
 
     def _init_env(self):
         self.env = gym.make(self.env_id)
@@ -76,4 +79,7 @@ class BaseAgent(ABC):
     @abstractmethod
     def train(self):
         pass
+
+    def seed(self, seed=None):
+        self.env.seed(seed)
 

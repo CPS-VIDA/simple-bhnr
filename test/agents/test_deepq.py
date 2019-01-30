@@ -41,7 +41,8 @@ AGENT_CONFIG = dict(
         epsilon=1.0,
         epsilon_min=0.1,
         epsilon_decay=0.95,
-    )
+    ),
+    seed_fn = lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )
 
 
