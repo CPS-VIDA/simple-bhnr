@@ -5,6 +5,7 @@ import torch
 import gym
 from safe_rl.utils.general import set_global_seed
 
+from gym.spaces import Box
 
 class BaseAgent(ABC):
     """Abstract Agent class"""
@@ -13,9 +14,6 @@ class BaseAgent(ABC):
 
     def __init__(self, env_id, hyperparams, **kwargs):
         self.env_id = env_id
-        self._init_env()
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
         self.hyp = self.default_hyperparams
         self.hyp.update(hyperparams)
         self.observers = deque()
@@ -23,11 +21,15 @@ class BaseAgent(ABC):
         tmp_dev = torch.device(
             'cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.device = kwargs.get('device', tmp_dev)
+        self._seed = kwargs.get('seed')
 
-        self.seed(kwargs.get('seed'))
+        self._init_env()
+        self.observation_space = self.env.observation_space # type: Box
+        self.action_space = self.env.action_space
 
     def _init_env(self):
         self.env = gym.make(self.env_id)
+        self.env.seed(self._seed)
 
     @abstractmethod
     def run_training(self, n_episodes, render=False):
@@ -42,11 +44,11 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def observe(self, state, action, reward, next_state, done):
+    def observe(self, *args):
         pass
 
     @abstractmethod
-    def learn(self):
+    def learn(self, *args):
         pass
 
     @abstractmethod

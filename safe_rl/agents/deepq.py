@@ -94,6 +94,8 @@ class DQN(BaseAgent):
         self.episode_rewards = deque()
         self.episode_durations = deque()
 
+        self.to(self.device)
+
     def observe(self, state, action, reward, next_state, done):
         self.memory.push(Transition(state, action, reward, next_state, done))
 

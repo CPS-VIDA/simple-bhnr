@@ -14,6 +14,7 @@ from safe_rl.utils.general import set_global_seed
 import pandas as pd
 from datetime import datetime
 
+
 def trial_runner(agent_fn, conf: dict):
     env_id = conf['env_id']
     name = conf['name']
@@ -39,6 +40,8 @@ def trial_runner(agent_fn, conf: dict):
         agent.attach(EpisodicCheckpointSaver(checkpoint_dir, interval=backup_interval))
         durations, rewards = agent.run_training(n_episodes, render=render)
 
+        if durations is None or rewards is None:
+            continue
         trial_num_str = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         monitor_csv = os.path.join(trial_dir, trial_num_str + '.monitor.csv')
         df = pd.DataFrame({
@@ -46,7 +49,3 @@ def trial_runner(agent_fn, conf: dict):
             'rew': rewards,
         })
         df.to_csv(monitor_csv, header=False)
-
-
-
-        

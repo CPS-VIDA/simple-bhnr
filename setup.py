@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-NAME = "temporal-rl"
+NAME = "safe-rl"
 DESCRIPTION = "A collection of Safe RL experiments that uses ideas from Formal Methods, like Temporal logics, Barrier certificates, Bisimulation functions, etc."
 URL = ""
 EMAIL = "anandbal@usc.edu"
@@ -15,7 +15,8 @@ REQUIRED_PKGS = [
     "torch",
     "torchvision",
     "sympy",
-    'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip'
+    'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip',
+    'cloudpickle',
 ]
 
 

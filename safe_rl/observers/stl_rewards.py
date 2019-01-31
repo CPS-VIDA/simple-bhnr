@@ -116,3 +116,12 @@ class STLRewarder(BaseObserver):
                 self.psig.episode_rewards = 0
 
 
+class MultiProcSTLRewarder(BaseObserver):
+    def __init__(self, monitor, partial_sig_len, n_procs):
+        self.monitor = monitor
+        self.psigs = [None]*n_procs
+        self.n_procs = n_procs
+        
+        self.agent_mem = None
+
+
