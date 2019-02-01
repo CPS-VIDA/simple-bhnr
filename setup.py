@@ -21,8 +21,9 @@ REQUIRED_PKGS = [
 
 
 EXTRAS = {
-    'bullet': [
+    'third-party': [
         'pybulletgym @ https://github.com/benelot/pybullet-gym/archive/master.zip',
+        'Box2D'
     ],
 }
 
