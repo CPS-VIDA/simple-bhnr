@@ -46,7 +46,7 @@ class MultiProcPartialSignal(MultiProcRolloutMemory):
         )
         for tr in zip(*t_list):
             self.buffers[idx].append(tr)
-        self.psigs[idex].clear()
+        self.psigs[idx].clear()
 
     @property
     def first(self):
