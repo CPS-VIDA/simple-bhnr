@@ -26,6 +26,14 @@ ACTransition = namedtuple(
     )
 )
 
+AdvTransition = namedtuple(
+    'AdvTransition', (
+        'state', 'action', 'reward', 'next_state', 'done',
+        'action_log_prob', 'value_pred', 'returns',
+        'advantage'
+    )
+)
+
 
 class BaseMemory(ABC):
 

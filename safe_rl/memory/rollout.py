@@ -2,8 +2,10 @@ import random
 from collections import deque, namedtuple
 
 import numpy as np
-from safe_rl.core.memory import BaseMemory, Transition, QTransition, ACTransition
+from safe_rl.core.memory import BaseMemory, Transition, QTransition, ACTransition, AdvTransition
 from safe_rl.memory.uniform import UniformReplay
+
+import random
 
 
 class RolloutMemory(UniformReplay):
@@ -50,7 +52,7 @@ class MultiProcRolloutMemory(BaseMemory):
         for i, buf in enumerate(self.buffers):
             next_val = next_value[i]
             batch = ACTransition(*zip(*buf))
-            dones = np.array(batch.done,dtype=np.uint8)
+            dones = np.array(batch.done, dtype=np.uint8)
             rew = np.array(batch.reward)
             ret = np.array(batch.returns)
             ret[-1] = next_val * gamma * (1 - dones[-1]) + rew[-1]
@@ -89,3 +91,24 @@ class MultiProcRolloutMemory(BaseMemory):
     @property
     def capacity(self):
         return self.n_procs * self.n_steps
+
+    def ppo_sample_generator(self, advantages, n_minibatch):
+        batch_size = self.n_procs * self.n_steps
+        assert batch_size >= n_minibatch, (
+            "PPO requires the number of processes ({}) "
+            "* number of steps ({}) = {} "
+            "to be greater than or equal to the number of PPO mini batches ({})."
+            "".format(self.n_procs, self.n_steps, batch_size, n_minibatch))
+
+        minibatch_size = batch_size // n_minibatch
+        batch = deque()
+        for buf in self.buffers:
+            batch.extend(buf)
+        batch = ACTransition(*zip(*batch))
+        batch_adv = AdvTransition(
+            batch.state, batch.action, batch.reward, batch.next_state, batch.done, batch.action_log_prob,
+            batch.value_pred, batch.returns, advantages
+        )
+        batch_adv = [AdvTransition(*tr) for tr in zip(*batch_adv)]
+        for n in range(n_minibatch):
+            yield AdvTransition(*zip(*random.sample(batch_adv, minibatch_size)))

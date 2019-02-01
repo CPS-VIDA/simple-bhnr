@@ -80,9 +80,9 @@ class A2C(BaseAgent):
         self.broadcast(Event.BEGIN_TRAINING)
         states = self.env.reset()
         for epoch in range(num_updates):
-            expected_values, vals, action_log_probs, dist_entropy, states = self.rollout(states, render)
-            # print('Update {}: {}'.format(epoch, expected_values))
-            self.learn(expected_values, vals, action_log_probs, dist_entropy)
+            states = self.rollout(states, render)
+            self.process_rollout()
+            self.memory.clear_until_last()
         self.broadcast(Event.END_TRAINING)
 
         max_steps = total_steps // self.n_workers
@@ -120,7 +120,9 @@ class A2C(BaseAgent):
         next_vals = self.policy_net(self._get_tensor(states))[0].detach().cpu().numpy()
         self.broadcast(Event.SYNC)
         self.memory.compute_returns(next_vals, self.use_gae, self.gamma, self.tau)
+        return states
 
+    def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
         next_state_batch = torch.cat(tuple(self._get_tensor(unroll_pre.next_state)))
         action_batch = torch.cat(tuple(torch.tensor(unroll_pre.action)))
@@ -134,7 +136,7 @@ class A2C(BaseAgent):
             action_batch,
         )
         # TODO: The tutorial reshapes the tensors. But we really don't need it I think
-        return returns_batch, vals.squeeze(), action_log_probs, dist_entropy, states
+        self.learn(returns_batch, vals.squeeze(), action_log_probs, dist_entropy)
 
     def learn(self, expected_vals, vals, action_log_prob, dist_entropy):
         self.broadcast(Event.BEGIN_LEARN)
@@ -149,7 +151,6 @@ class A2C(BaseAgent):
         nn.utils.clip_grad_norm_(self.policy_net.parameters(), self.max_grad_norm)
 
         self.optimizer.step()
-        self.memory.clear_until_last()
         self.broadcast(Event.END_LEARN)
 
     def to(self, torch_device):
