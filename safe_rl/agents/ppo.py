@@ -67,7 +67,7 @@ class PPO(A2C):
             data_gen = self.memory.ppo_sample_generator(advantages, self.n_minibatch)
             for sample in data_gen:
                 obss = self._get_tensor(sample.next_state)
-                acts = torch.tensor(sample.action)
+                acts = self._get_tensor(sample.action)
                 val_p = self._get_tensor(sample.value_pred)
                 alp = self._get_tensor(sample.action_log_prob)
                 rets = self._get_tensor(sample.returns)

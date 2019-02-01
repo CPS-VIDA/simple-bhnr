@@ -126,8 +126,8 @@ class A2C(BaseAgent):
     def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
         next_state_batch = torch.cat(tuple(self._get_tensor(unroll_pre.next_state)))
-        action_batch = torch.cat(tuple(torch.tensor(unroll_pre.action)))
-        returns_batch = torch.cat(tuple(torch.tensor(unroll_pre.returns))).squeeze()
+        action_batch = torch.cat(tuple(self._get_tensor(unroll_pre.action)))
+        returns_batch = torch.cat(tuple(self._get_tensor(unroll_pre.returns))).squeeze()
 
         msr = np.array(unroll_pre.reward).mean(axis=0)
         sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
