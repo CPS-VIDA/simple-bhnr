@@ -17,13 +17,13 @@ REQUIRED_PKGS = [
     "sympy",
     'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip',
     'cloudpickle',
+    'Box2D',
 ]
 
 
 EXTRAS = {
     'third-party': [
         'pybulletgym @ https://github.com/benelot/pybullet-gym/archive/master.zip',
-        'Box2D'
     ],
 }
 

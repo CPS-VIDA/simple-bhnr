@@ -1,6 +1,7 @@
 """Test STL+PPO"""
 import copy
 
+import mpmath
 import temporal_logic.signal_tl as stl
 import torch
 import torch.nn as nn
@@ -68,13 +69,19 @@ SIGNALS = (
     SIGNALS)
 
 SPEC = stl.G(
-    # Be moving forward always
-    (vel_x > 0)
-    # Reduce hull angular velocity
-    & (abs(hull_angularVelocity) < 2)
-    # Prevents running
-    & stl.Implies((leg_1_ground_contact_flag > 0), (leg_2_ground_contact_flag <= 0))
-    & stl.Implies((leg_2_ground_contact_flag > 0), (leg_1_ground_contact_flag <= 0))
+    stl.And(
+        # Be moving forward always
+        (vel_x > 0),
+        # Reduce hull tilt to ~ +- 12deg
+        (abs(hull_angle) <= 0.2),
+        # Reduce hull angular velocity
+        (abs(hull_angularVelocity) < 2),
+        # Prevents running
+        stl.Implies((leg_1_ground_contact_flag > 0),
+                    stl.F(leg_2_ground_contact_flag <= 0, (0, 16))),
+        stl.Implies((leg_2_ground_contact_flag > 0),
+                    stl.F(leg_1_ground_contact_flag <= 0, (0, 16))),
+    )
 )
 
 AGENT_CONFIG = dict(
@@ -136,4 +143,4 @@ def test_bipedalwalker_ppo_stl():
 
 
 if __name__ == "__main__":
-    test_cartpole_deepq_uniform_doubleq_stl()
+    test_bipedalwalker_ppo_stl()
