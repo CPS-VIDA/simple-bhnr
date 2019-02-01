@@ -38,7 +38,10 @@ class MultiProcRolloutMemory(BaseMemory):
             buf.append(items[i])
 
     def sample(self, size):
-        tmp_buffer = [ACTransition(*zip(*buf)) for buf in self.buffers]
+        l = min([len(buf) for buf in self.buffers])
+        tmp_buffer = [list(buf)[:l] for buf in self.buffers]
+        tmp_buffer = [buf[:size] for buf in tmp_buffer]
+        tmp_buffer = [ACTransition(*zip(*buf)) for buf in tmp_buffer]
         return tmp_buffer
 
     def __len__(self):
