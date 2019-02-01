@@ -11,15 +11,16 @@ AUTHOR = "Anand Balakrishnan"
 REQUIRES_PYTHON = '>=3.6'
 VERSION = '0.1.0'
 REQUIRED_PKGS = [
-    "gym",
+    "gym[box2d]",
     "torch",
     "torchvision",
     "sympy",
     'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip',
     'cloudpickle',
-    'Box2D',
     'pandas',
     'apipkg',
+    "Box2D",
+    "Box2D-py"
 ]
 
 

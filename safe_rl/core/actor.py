@@ -6,9 +6,7 @@ import gym
 
 from abc import abstractmethod, ABC
 
-
 from enum import Enum, auto
-
 
 
 class BaseActor(ABC, mp.Process):

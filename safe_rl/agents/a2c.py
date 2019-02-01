@@ -91,7 +91,8 @@ class A2C(BaseAgent):
         ret = np.array(self.mean_step_rewards)[:max_steps]
         print('Number of rollouts: {}'.format(len(ret)))
         print('Number of rollouts: {} ^'.format(max_steps))
-        return np.arange(total_steps // self.n_workers), ret
+        max_steps = min(max_steps, len(ret))
+        return np.arange(max_steps), ret
 
     def act(self, state_vec):
         state_vec = self._get_tensor(state_vec)
