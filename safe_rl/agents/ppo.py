@@ -46,7 +46,11 @@ class PPO(A2C):
     def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
 
-        self.mean_step_rewards.extend(np.array(unroll_pre.reward).mean(axis=0))
+        msr = np.array(unroll_pre.reward).mean(axis=0)
+        sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
+        print('Mean Step Return: {}'.format(sum_ret))
+
+        self.mean_step_rewards.extend(msr)
         self.episode_rewards += np.array(unroll_pre.reward).sum(axis=1)
 
         returns = torch.cat(tuple(torch.tensor(unroll_pre.returns))).squeeze()

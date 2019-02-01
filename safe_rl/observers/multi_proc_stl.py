@@ -47,6 +47,18 @@ class MultiProcPartialSignal(MultiProcRolloutMemory):
         for tr in zip(*t_list):
             self.buffers[idx].append(tr)
 
+    @property
+    def first(self):
+        if len(self.psigs[0]) > 0:
+            return [psig[0] for psig in self.psigs]
+        return [self.buffers[i][0] for i in range(self.n_procs)]
+
+    @property
+    def last(self):
+        if len(self.psigs[0]) > 0:
+            return [psig[-1] for psig in self.psigs]
+        return [buf[-1] for buf in self.buffers]
+
 
 class MultiProcSTLRewarder(BaseObserver):
     def __init__(self, n_steps, n_workers, monitor):

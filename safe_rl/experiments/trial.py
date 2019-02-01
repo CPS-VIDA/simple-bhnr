@@ -79,7 +79,7 @@ def trial_runner(agent_fn, user_conf: dict):
         conf['seed'] = seed_fn(conf['seed'])
         agent = agent_fn(conf)  # type: BaseAgent
 
-        load_trial = random.sample(trials, 1)
+        load_trial = random.sample(trials, 1)[0]
         load_path = os.path.join(backup_dir, name, load_trial, 'checkpoint.latest.pt')
         states, rewards = agent.eval_episode(render=render, seed=conf['seed'], load=load_path)
 

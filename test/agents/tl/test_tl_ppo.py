@@ -10,6 +10,7 @@ from temporal_logic.signal_tl.semantics import FilteringMonitor, EfficientRobust
 from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
 from safe_rl.observers.multi_proc_stl import MultiProcSTLRewarder
+from safe_rl.observers.resetter import ForceResetter
 
 """
 BipedalWalker environment
@@ -71,16 +72,22 @@ SIGNALS = (
 SPEC = stl.G(
     stl.And(
         # Be moving forward always
-        (vel_x > 0),
+        (vel_x > 1),
         # Reduce hull tilt to ~ +- 12deg
         (abs(hull_angle) <= 0.2),
         # Reduce hull angular velocity
         (abs(hull_angularVelocity) < 2),
         # Prevents running
         stl.Implies((leg_1_ground_contact_flag > 0),
-                    stl.F(leg_2_ground_contact_flag <= 0, (0, 16))),
+                    stl.And(
+                        stl.F(leg_2_ground_contact_flag > 0, (10, 16)),  # Set foot in 10-16 timesteps
+                        stl.G(leg_2_ground_contact_flag <= 0, (1, 8)),  # Make sure to actually lift leg
+                    )),
         stl.Implies((leg_2_ground_contact_flag > 0),
-                    stl.F(leg_1_ground_contact_flag <= 0, (0, 16))),
+                    stl.And(
+                        stl.F(leg_1_ground_contact_flag > 0, (10, 16)),  # Set foot in 10-16 timesteps
+                        stl.G(leg_1_ground_contact_flag <= 0, (1, 8)),  # Make sure to actually lift leg
+                    )),
     )
 )
 
@@ -90,7 +97,7 @@ AGENT_CONFIG = dict(
     n_trials=8,
     n_episodes=10000,
     n_eval_episodes=20,
-    render=False,
+    render=True,
     save_dir='data',
     backup_dir='backups',
     backup_interval=100,

@@ -113,12 +113,15 @@ class DummyVecEnv:
 
     def step(self, actions):
         results = [env.step(action) for env, action in zip(self.envs, actions)]
+        for i, (o, r, d, _) in enumerate(results):
+            if d is True:
+                self.envs[i].reset()
         obs, rews, dones, infos = zip(*results)
         return np.stack(obs), np.stack(rews), np.stack(dones), infos
 
     def render(self):
         for env in self.envs:
-            self.en
+            env.render()
 
     def reset(self):
         return np.stack([env.reset() for env in self.envs])

@@ -19,7 +19,6 @@ from safe_rl.memory.rollout import MultiProcRolloutMemory
 
 
 class A2C(BaseAgent):
-
     default_hyperparams = dict(
         gamma=0.95,
 
@@ -94,7 +93,6 @@ class A2C(BaseAgent):
         print('Number of rollouts: {} ^'.format(max_steps))
         return np.arange(total_steps // self.n_workers), ret
 
-
     def act(self, state_vec):
         state_vec = self._get_tensor(state_vec)
         value, action, action_log_prob = self.policy_net.act(state_vec)
@@ -116,12 +114,12 @@ class A2C(BaseAgent):
                 self.env.render()
             val, action, action_log_prob = self.act(states)
             obs, rew, done, _ = self.env.step(action)
-
             self.observe(states, action, rew, obs, done, action_log_prob, val)
             states = obs
+            self.broadcast(Event.STEP)
         next_vals = self.policy_net(self._get_tensor(states))[0].detach().cpu().numpy()
         self.broadcast(Event.SYNC)
-        print('SYNC')
+        print('SYNC', end=' --> ')
         self.memory.compute_returns(next_vals, self.use_gae, self.gamma, self.tau)
         return states
 
@@ -131,7 +129,10 @@ class A2C(BaseAgent):
         action_batch = torch.cat(tuple(torch.tensor(unroll_pre.action)))
         returns_batch = torch.cat(tuple(torch.tensor(unroll_pre.returns))).squeeze()
 
-        self.mean_step_rewards.extend(np.array(unroll_pre.reward).mean(axis=0))
+        msr = np.array(unroll_pre.reward).mean(axis=0)
+        sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
+        print('Mean Step Return: {}'.format(sum_ret))
+        self.mean_step_rewards.extend(msr)
         self.episode_rewards += np.array(unroll_pre.reward).sum(axis=1)
 
         vals, action_log_probs, dist_entropy = self.policy_net.evaluate_actions(

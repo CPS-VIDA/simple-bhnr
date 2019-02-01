@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
+from safe_rl.observers.resetter import ForceResetter
 
 AGENT_CONFIG = dict(
     env_id='BipedalWalker-v2',
@@ -30,14 +31,14 @@ AGENT_CONFIG = dict(
         max_grad_norm=0.5,
 
         n_steps=16,
-        n_workers=4,
+        n_workers=1,
 
         use_gae=False,
 
         clipping=0.2,
         use_clipped_value_loss=True,
         ppo_epochs=4,
-        n_minibatch=32,
+        n_minibatch=16,
     ),
     seed_fn=lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )
@@ -48,10 +49,11 @@ def gen_agent(conf):
     env_id = conf.pop('env_id')
     # net = copy.deepcopy(conf.pop('net'))
     hyp = conf.pop('hyperparams')
-    return PPO(env_id, hyp, **conf)
+    agent = PPO(env_id, hyp, **conf)
+    return agent
 
 
-def test_pendulum_ppo():
+def test_bipedal_ppo():
     hyp = dict()
     config = AGENT_CONFIG.copy()
     config['name'] = 'BipedalWalker/vanilla/ppo'
@@ -60,4 +62,4 @@ def test_pendulum_ppo():
 
 
 if __name__ == "__main__":
-    test_pendulum_ppo()
+    test_bipedal_ppo()
