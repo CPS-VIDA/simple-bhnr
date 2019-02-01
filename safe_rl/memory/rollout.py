@@ -51,7 +51,8 @@ class MultiProcRolloutMemory(BaseMemory):
         tmp_bf = [None] * self.n_procs  # type: list[deque]
         for i, buf in enumerate(self.buffers):
             next_val = next_value[i]
-            batch = ACTransition(*zip(*buf))
+            tmp = tuple(zip(*buf))
+            batch = ACTransition(*tmp)
             dones = np.array(batch.done, dtype=np.uint8)
             rew = np.array(batch.reward)
             ret = np.array(batch.returns)

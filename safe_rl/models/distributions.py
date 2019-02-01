@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -19,9 +20,9 @@ class DiagGaussian(nn.Module):
         super(DiagGaussian, self).__init__()
 
         self.mean_predict = nn.Linear(num_input, num_output)
-        self.std_predict = nn.Linear(num_input, num_output)
+        self.std = nn.Parameter(torch.zeros(num_output))
 
     def forward(self, input):
         mu = self.mean_predict(input)
-        sig = self.std_predict(input)
+        sig = F.softplus(self.std)
         return Normal(mu, sig)

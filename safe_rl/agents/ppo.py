@@ -67,7 +67,7 @@ class PPO(A2C):
                 val_p = self._get_tensor(sample.value_pred)
                 alp = self._get_tensor(sample.action_log_prob)
                 rets = self._get_tensor(sample.returns)
-                adv = self._get_tensor(sample.advantage)
+                adv = self._get_tensor(sample.advantage).view(-1, 1)
                 dones = self._get_tensor(sample.done, torch.uint8)
 
                 values, action_log_probs, dist_entropy = self.policy_net.evaluate_actions(obss, acts)

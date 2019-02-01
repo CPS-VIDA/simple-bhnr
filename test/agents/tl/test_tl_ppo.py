@@ -108,14 +108,14 @@ AGENT_CONFIG = dict(
         max_grad_norm=0.5,
 
         n_steps=16,
-        n_workers=4,
+        n_workers=1,
 
         use_gae=False,
 
         clipping=0.2,
         use_clipped_value_loss=True,
         ppo_epochs=4,
-        n_minibatch=32,
+        n_minibatch=16,
     ),
     seed_fn=lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )

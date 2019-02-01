@@ -7,7 +7,7 @@ from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
 
 AGENT_CONFIG = dict(
-    env_id='MountainCarContinuous-v0',
+    env_id='BipedalWalker-v2',
     name='default',
     n_trials=8,
     n_episodes=10000,
@@ -18,7 +18,6 @@ AGENT_CONFIG = dict(
     backup_interval=100,
     device=(torch.device('cuda')
             if torch.cuda.is_available() else torch.device('cpu')),
-    # net=ActorCritic(3, 1),
     hyperparams=dict(
         gamma=0.95,
 
@@ -42,7 +41,6 @@ AGENT_CONFIG = dict(
     ),
     seed_fn=lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )
-
 
 def gen_agent(conf):
     conf = conf.copy()

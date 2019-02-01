@@ -19,24 +19,30 @@ class MultiProcPartialSignal(MultiProcRolloutMemory):
         assert all(isinstance(item, ACTransition) for item in items)
 
         for i, ps in enumerate(self.psigs):
-            ps.push()
             tr = items[i]
+            ps.append(tr)
             if tr.done:
                 self.flush(i)
                 ps.clear()
 
     def flush(self, idx):
-        unzipped = ACTransition(*zip(*list(self.psigs[idx])))
+        sig_to_flush = list(self.psigs[idx])
+        if len(sig_to_flush) == 0:
+            return 
+        unzipped = ACTransition(*zip(*sig_to_flush))
         partial_trace = np.array(unzipped.state)
         R = np.zeros(len(partial_trace))
         if len(R) > 2:
             R = self.monitor(partial_trace)
-        t_list = Transition(
+        t_list = ACTransition(
             unzipped.state,
             unzipped.action,
             R,
             unzipped.next_state,
             unzipped.done,
+            unzipped.action_log_prob,
+            unzipped.value_pred,
+            unzipped.returns
         )
         for tr in zip(*t_list):
             self.buffers[idx].append(tr)
