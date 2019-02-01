@@ -18,6 +18,8 @@ REQUIRED_PKGS = [
     'temporal_logic @ https://github.com/anand-bala/tl-py/archive/master.zip',
     'cloudpickle',
     'Box2D',
+    'pandas',
+    'apipkg',
 ]
 
 
