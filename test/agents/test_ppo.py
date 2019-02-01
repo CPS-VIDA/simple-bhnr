@@ -42,6 +42,7 @@ AGENT_CONFIG = dict(
     seed_fn=lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )
 
+
 def gen_agent(conf):
     conf = conf.copy()
     env_id = conf.pop('env_id')
@@ -53,7 +54,7 @@ def gen_agent(conf):
 def test_pendulum_ppo():
     hyp = dict()
     config = AGENT_CONFIG.copy()
-    config['name'] = 'pendulum/vanilla/ppo'
+    config['name'] = 'BipedalWalker/vanilla/ppo'
     config['hyperparams'].update(hyp)
     trial_runner(gen_agent, config)
 

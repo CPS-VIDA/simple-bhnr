@@ -122,6 +122,10 @@ AGENT_CONFIG = dict(
 
 
 def gen_agent(conf):
+    print('Using following STL spec:')
+
+    print(SPEC.tex_print())
+
     conf = conf.copy()
     env_id = conf.pop('env_id')
     hyp = conf.pop('hyperparams')
@@ -137,7 +141,7 @@ def gen_agent(conf):
 def test_bipedalwalker_ppo_stl():
     hyp = dict()
     config = AGENT_CONFIG.copy()
-    config['name'] = 'pendulum/stl/ppo'
+    config['name'] = 'BipedalWalker/stl/ppo'
     config['hyperparams'].update(hyp)
     trial_runner(gen_agent, config)
 
