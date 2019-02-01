@@ -169,7 +169,7 @@ class DQN(BaseAgent):
     def to(self, torch_device):
         self.device = torch_device
         self.policy_net.to(torch_device)
-        if self.target_net:
+        if self.hyp['target_net']:
             self.target_net.to(torch_device)
 
     def run_training(self, n_episodes, render=False):
