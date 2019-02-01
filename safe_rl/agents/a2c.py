@@ -19,6 +19,7 @@ from safe_rl.memory.rollout import MultiProcRolloutMemory
 
 
 class A2C(BaseAgent):
+
     default_hyperparams = dict(
         gamma=0.95,
 
@@ -80,9 +81,11 @@ class A2C(BaseAgent):
         self.broadcast(Event.BEGIN_TRAINING)
         states = self.env.reset()
         for epoch in range(num_updates):
+            self.broadcast(Event.BEGIN_EPISODE)
             states = self.rollout(states, render)
             self.process_rollout()
             self.memory.clear_until_last()
+            self.broadcast(Event.END_EPISODE)
         self.broadcast(Event.END_TRAINING)
 
         max_steps = total_steps // self.n_workers
@@ -91,8 +94,6 @@ class A2C(BaseAgent):
         print('Number of rollouts: {} ^'.format(max_steps))
         return np.arange(total_steps // self.n_workers), ret
 
-    def run_eval(self, n_episodes, render=False):
-        pass
 
     def act(self, state_vec):
         state_vec = self._get_tensor(state_vec)
@@ -109,6 +110,7 @@ class A2C(BaseAgent):
         self.memory.push(transitions)
 
     def rollout(self, states, render=False):
+        print('Perform rollout', end=' --> ')
         for step in range(self.n_steps):
             if render:
                 self.env.render()
@@ -119,6 +121,7 @@ class A2C(BaseAgent):
             states = obs
         next_vals = self.policy_net(self._get_tensor(states))[0].detach().cpu().numpy()
         self.broadcast(Event.SYNC)
+        print('SYNC')
         self.memory.compute_returns(next_vals, self.use_gae, self.gamma, self.tau)
         return states
 
@@ -167,3 +170,25 @@ class A2C(BaseAgent):
 
     def train(self):
         self.policy_net.train()
+
+    def eval_episode(self, render=False, seed=None, load=''):
+        rewards = deque()
+        states = deque()
+
+        env = DummyVecEnv([make_env(self.env_id, seed, 0)])
+        self.set_global_seed(seed)
+
+        if load is not '':
+            self.load_net(load)
+
+        done = False
+        state = env.reset()
+        while not done:
+            if render:
+                env.render()
+            action = self.act(state)
+            obs, rew, done, _ = self.env.step(action)
+            rewards.append(np.squeeze(rewards))
+            states.append(np.reshape(state, -1))
+            state = obs
+        return (states, rewards)

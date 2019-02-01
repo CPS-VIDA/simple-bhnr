@@ -36,7 +36,7 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def run_eval(self, n_episodes, render=False):
+    def eval_episode(self, render=False, seed=None, load=''):
         pass
 
     @abstractmethod
@@ -84,4 +84,7 @@ class BaseAgent(ABC):
 
     def seed(self, seed=None):
         self.env.seed(seed)
+
+    def set_global_seed(self, seed=None):
+        set_global_seed(seed)
 

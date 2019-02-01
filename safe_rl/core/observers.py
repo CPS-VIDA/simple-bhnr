@@ -17,6 +17,11 @@ class Event(Enum):
     END_EPISODE = auto()
     END_TRAINING = auto()
 
+    BEGIN_EVAL_EPISODE = auto()
+    END_EVAL_EPISODE = auto()
+    BEGIN_EVAL = auto()
+    END_EVAL = auto()
+
 
 class BaseObserver(ABC):
     agent = None

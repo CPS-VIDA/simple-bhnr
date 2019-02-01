@@ -211,33 +211,34 @@ class DQN(BaseAgent):
         self.episode_rewards.append(total_reward)
         self.broadcast(Event.END_EPISODE)
 
-    def run_eval(self, n_episodes, render=False):
-        self.eval()
-        for ep in range(n_episodes):
-            pass
+    def eval_episode(self, render=False, seed=None, load=''):
+        rewards = deque()
+        states = deque()
 
-    def eval_episode(self, render=False):
-        total_reward = 0
-        state = self.env.reset()
+        env = gym.make(self.env_id)
+        env.seed(seed)
+        self.set_global_seed(seed)
 
-        t = 0
+        if load is not '':
+            self.load_net(load)
+
         done = False
+        state = env.reset()
         while not done:
             if render:
-                self.env.render()
+                env.render()
             action = self.act(state)
             obs, rew, done, _ = self.env.step(action)
-            total_reward += rew
-            t += 1
+            rewards.append(rewards)
+            states.append(state)
             state = obs
-        
-        self.episode_rewards.append(total_reward)
+        return (states, rewards)
 
     def save_net(self, filepath):
         torch.save(self.policy_net.state_dict(), filepath)
 
     def load_net(self, filepath):
-        self.policy_net.load_state_dict(torch.load(filepath))
+        self.policy_net.load_state_dict(torch.load(filepath, map_location='cpu'))
 
     def eval(self):
         self.policy_net.eval()
