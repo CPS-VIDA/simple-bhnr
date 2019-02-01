@@ -95,7 +95,7 @@ AGENT_CONFIG = dict(
     env_id='BipedalWalker-v2',
     name='default',
     n_trials=8,
-    n_episodes=10000,
+    n_episodes=100000,
     n_eval_episodes=20,
     render=False,
     save_dir='data',
@@ -114,15 +114,15 @@ AGENT_CONFIG = dict(
         entropy_coef=0.01,
         max_grad_norm=0.5,
 
-        n_steps=16,
-        n_workers=1,
+        n_steps=32,
+        n_workers=4,
 
         use_gae=False,
 
         clipping=0.2,
         use_clipped_value_loss=True,
         ppo_epochs=4,
-        n_minibatch=16,
+        n_minibatch=32,
     ),
     seed_fn=lambda cur_seed: 0 if cur_seed is None else cur_seed + 1
 )

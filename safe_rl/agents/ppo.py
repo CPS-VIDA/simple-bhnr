@@ -45,8 +45,9 @@ class PPO(A2C):
 
     def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
-
+        print('DEBUG: REW = {}'.format(unroll_pre.reward))
         rew = np.array(unroll_pre.reward)
+        print('DEBUG: REW = {}'.format(rew))
         msr = rew.mean(axis=0)
         sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
         print('Mean Step Return: {}'.format(sum_ret))
