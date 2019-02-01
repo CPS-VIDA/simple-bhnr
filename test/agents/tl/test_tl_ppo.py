@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 from temporal_logic.signal_tl.semantics import FilteringMonitor, EfficientRobustnessMonitor
 
-from safe_rl.agents.deepq import DQN
+from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
-from safe_rl.observers.stl_rewards import STLRewarder
+from safe_rl.observers.multi_proc_stl import MultiProcSTLRewarder
 
 """
 BipedalWalker environment
@@ -117,20 +117,20 @@ AGENT_CONFIG = dict(
 def gen_agent(conf):
     conf = conf.copy()
     env_id = conf.pop('env_id')
-    net = copy.deepcopy(conf.pop('net'))
     hyp = conf.pop('hyperparams')
-    agent = DQN(env_id, hyp, net, **conf)
+    agent = PPO(env_id, hyp, **conf)
+
     monitor = FilteringMonitor(SPEC, SIGNALS)
-    agent.attach(STLRewarder(monitor, 15))
+    n_steps = AGENT_CONFIG['hyperparams']['n_steps']
+    n_workers = AGENT_CONFIG['hyperparams']['n_workers']
+    agent.attach(MultiProcSTLRewarder(n_steps, n_workers, monitor))
     return agent
 
 
-def test_cartpole_deepq_uniform_doubleq_stl():
-    hyp = dict(
-        double_q=True,
-    )
+def test_bipedalwalker_ppo_stl():
+    hyp = dict()
     config = AGENT_CONFIG.copy()
-    config['name'] = 'bipedalwalker/stl/ppo'
+    config['name'] = 'pendulum/stl/ppo'
     config['hyperparams'].update(hyp)
     trial_runner(gen_agent, config)
 

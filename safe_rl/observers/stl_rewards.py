@@ -8,8 +8,8 @@ from collections import deque
 
 import numpy as np
 from safe_rl.core.observers import BaseObserver, Event
-from safe_rl.core.memory import BaseMemory, Transition, QTransition
-from safe_rl.memory.rollout import RolloutMemory
+from safe_rl.core.memory import BaseMemory, Transition, QTransition, ACTransition, AdvTransition
+from safe_rl.memory.rollout import RolloutMemory, MultiProcRolloutMemory
 from temporal_logic.signal_tl.semantics.base import BaseMonitor
 
 
@@ -24,7 +24,6 @@ class PartialSignal(BaseMemory):
 
         self.episode_rewards = 0
 
-
     def update(self, *args):
         self.agent_mem.update(args)
 
@@ -34,7 +33,7 @@ class PartialSignal(BaseMemory):
         is_done = item.done
         if (len(self.buffer) == self.max_len) or is_done:
             self._flush()
-    
+
     def _flush(self):
         unzipped = Transition(*zip(*list(self.buffer)))
         partial_trace = np.array(unzipped.state)
@@ -79,8 +78,8 @@ class PartialSignal(BaseMemory):
     @property
     def capacity(self):
         # TODO: Check this
-        return self.agent_mem.capacity        
-    
+        return self.agent_mem.capacity
+
 
 class STLRewarder(BaseObserver):
     def __init__(self, monitor, partial_sig_len):
@@ -91,13 +90,14 @@ class STLRewarder(BaseObserver):
         self.step_counter = 0
 
     def attach(self, agent):
-        try: 
+        try:
             self.partial_sig_len = min(self.partial_sig_len, agent.rollout_len)
         except:
             pass
-        
+
         self.agent_mem = agent.memory
-        self.psig = PartialSignal(self.partial_sig_len, self.monitor, self.agent_mem)
+        self.psig = PartialSignal(
+            self.partial_sig_len, self.monitor, self.agent_mem)
         agent.memory = self.psig
         self.agent = agent
 
@@ -114,14 +114,5 @@ class STLRewarder(BaseObserver):
                 self.agent.episode_rewards.append(self.psig.episode_rewards)
             finally:
                 self.psig.episode_rewards = 0
-
-
-class MultiProcSTLRewarder(BaseObserver):
-    def __init__(self, monitor, partial_sig_len, n_procs):
-        self.monitor = monitor
-        self.psigs = [None]*n_procs
-        self.n_procs = n_procs
-        
-        self.agent_mem = None
 
 
