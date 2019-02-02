@@ -156,8 +156,8 @@ def gen_agent(conf):
     agent = PPO(env_id, hyp, **conf)
     if conf['use_stl']:
         monitor = FilteringMonitor(SPEC, SIGNALS)
-        n_steps = conf['hyperparams']['n_steps']
-        n_workers = conf['hyperparams']['n_workers']
+        n_steps = hyp['n_steps']
+        n_workers = hyp['n_workers']
         agent.attach(MultiProcSTLRewarder(n_steps, n_workers, monitor))
     return agent
 
