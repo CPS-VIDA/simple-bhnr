@@ -228,10 +228,12 @@ class DQN(BaseAgent):
             if render:
                 env.render()
             action = self.act(state)
-            obs, rew, done, _ = self.env.step(action)
+            obs, rew, done, _ = env.step(action)
+            print('.', end='')
             rewards.append(rewards)
             states.append(state)
             state = obs
+        print('')
         return (states, rewards)
 
     def save_net(self, filepath):

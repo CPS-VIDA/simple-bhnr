@@ -110,6 +110,9 @@ def parse_args():
 
     parser.add_argument('--use-stl', action='store_true', default=False)
 
+    parser.add_argument('--eval', action='store_true', default=False)
+    parser.add_argument('--load', default=None)
+
     args = parser.parse_args()
     config = dict(
         env_id=args.env_id,
@@ -144,6 +147,8 @@ def parse_args():
         ),
         seed=args.seed,
         use_stl=args.use_stl,
+        eval=args.eval,
+        load=args.load,
     )
     return config
 
@@ -191,6 +196,35 @@ def run_training(conf):
         mon_csv = os.path.join(trial_dir, now + '.monitor.csv')
         df.to_csv(mon_csv, header=False)
 
+
+def run_eval(conf):
+    env_id = conf['env_id']
+    name = conf['name']
+    maximum_steps = conf['maximum_steps']
+    n_eval_episodes = conf['n_eval_episodes']
+    render = conf['render']
+    save_dir = conf['save_dir']
+    backup_dir = conf['backup_dir']
+    backup_interval = conf['backup_interval']
+    device = conf['device']
+    seed = conf['seed']
+
+    now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    trial_dir = os.path.join(save_dir, name)
+    check_dir = os.path.join(backup_dir, name, now)
+    os.makedirs(trial_dir, exist_ok=True)
+    os.makedirs(check_dir, exist_ok=True)
+
+    agent = gen_agent(conf)
+    agent.attach(EpisodicCheckpointSaver(check_dir, interval=backup_interval))
+    set_global_seed(seed)
+
+    data = agent.run_training(maximum_steps, render=render)
+    if data is not None:
+        df = pd.DataFrame(data)
+        now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        mon_csv = os.path.join(trial_dir, now + '.monitor.csv')
+        df.to_csv(mon_csv, header=False)
 
 if __name__ == "__main__":
     run_training(parse_args())
