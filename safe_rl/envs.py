@@ -31,7 +31,8 @@ def worker(remote, parent_remote, env_fn_wrapper):
 
 class CloudpickleWrapper:
     """
-    Uses cloudpickle to serialize contents (otherwise multiprocessing tries to use pickle)
+    Uses cloudpickle to serialize contents (otherwise multiprocessing tries to
+    use pickle)
     """
 
     def __init__(self, x):
@@ -48,9 +49,6 @@ class CloudpickleWrapper:
 
 class SubprocVecEnv:
     def __init__(self, env_fns):
-        """
-        envs: list of gym environments to run in subprocesses
-        """
         self.closed = False
         nenvs = len(env_fns)
         self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(nenvs)])

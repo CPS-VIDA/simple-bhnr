@@ -99,8 +99,9 @@ class DQN(BaseAgent):
     def observe(self, state, action, reward, next_state, done):
         self.memory.push(Transition(state, action, reward, next_state, done))
 
-    def act(self, state):
-        if self.epsilon_greedy and np.random.rand() <= self.epsilon:
+    def act(self, state, deterministic=False):
+        if not deterministic and \
+            self.epsilon_greedy and np.random.rand() <= self.epsilon:
             return self.action_space.sample()
         with torch.no_grad():
             s = self._get_tensor(state).unsqueeze(0)

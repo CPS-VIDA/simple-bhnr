@@ -94,7 +94,7 @@ class A2C(BaseAgent):
         max_steps = min(max_steps, len(ret))
         return np.arange(max_steps), ret
 
-    def act(self, state_vec):
+    def act(self, state_vec, deterministic=False):
         state_vec = self._get_tensor(state_vec)
         value, action, action_log_prob = self.policy_net.act(state_vec)
         return (
@@ -193,4 +193,6 @@ class A2C(BaseAgent):
             rewards.append(np.squeeze(rewards))
             states.append(np.reshape(state, -1))
             state = obs
-        return (states, rewards)
+        states = np.array(states)
+        rewards = np.array(rewards).reshape(-1, 1)
+        return np.append(states, rewards, axis=1)

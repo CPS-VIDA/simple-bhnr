@@ -61,14 +61,18 @@ SPEC = stl.G(
         # Prevents running
         stl.Implies((leg_1_ground_contact_flag > 0),
                     stl.And(
-                        stl.F(leg_2_ground_contact_flag > 0, (10, 16)),  # Set foot in 10-16 timesteps
-                        stl.G(leg_2_ground_contact_flag <= 0, (1, 8)),  # Make sure to actually lift leg
-                    )),
+                        # Set foot in 10-16 timesteps
+                        stl.F(leg_2_ground_contact_flag > 0, (10, 16)),
+                        # Make sure to actually lift leg
+                        stl.G(leg_2_ground_contact_flag <= 0, (1, 8)),
+        )),
         stl.Implies((leg_2_ground_contact_flag > 0),
                     stl.And(
-                        stl.F(leg_1_ground_contact_flag > 0, (10, 16)),  # Set foot in 10-16 timesteps
-                        stl.G(leg_1_ground_contact_flag <= 0, (1, 8)),  # Make sure to actually lift leg
-                    )),
+                        # Set foot in 10-16 timesteps
+                        stl.F(leg_1_ground_contact_flag > 0, (10, 16)),
+                        # Make sure to actually lift leg
+                        stl.G(leg_1_ground_contact_flag <= 0, (1, 8)),
+        )),
     )
 )
 
@@ -76,36 +80,42 @@ SPEC = stl.G(
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PPO')
     parser.add_argument('--env-id', required=True, help='Gym env id')
-    parser.add_argument('--name', required=True, help='Name of the current experiment')
+    parser.add_argument('--name', required=True,
+                        help='Name of the current experiment')
     # parser.add_argument('--n-trials', default=8, type=int, help='Number of tr')
-    parser.add_argument('--maximum-steps', default=100000, type=int, help='Total number of steps desired')
-    parser.add_argument('--n-eval-episodes', default=100, type=int, help='Number of episodes to evaluate the policy')
-    parser.add_argument('--render', action='store_true', default=False, help='Render the env?')
-    parser.add_argument('--save-dir', required=True, help='Base directory for all your data')
-    parser.add_argument('--backup-dir', required=True, help='Base dir for all backup data')
+    parser.add_argument('--maximum-steps', default=100000,
+                        type=int, help='Total number of steps desired')
+    parser.add_argument('--n-eval-episodes', default=100, type=int,
+                        help='Number of episodes to evaluate the policy')
+    parser.add_argument('--render', action='store_true',
+                        default=False, help='Render the env?')
+    parser.add_argument('--save-dir', default='data',
+                        help='Base directory for all your data')
+    parser.add_argument('--backup-dir', default='backups',
+                        help='Base dir for all backup data')
     parser.add_argument('--backup-interval', default=100, type=int)
     parser.add_argument('--device', type=str, default='cpu')
 
     parser.add_argument('--gamma', type=float, default=0.95)
-    
+
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epsilon', type=float, default=1e-5)
     parser.add_argument('--alpha', type=float, default=0.99)
-    
+
     parser.add_argument('--value-loss-coef', type=float, default=0.5)
     parser.add_argument('--entropy-coef', type=float, default=0.01)
     parser.add_argument('--max-grad-norm', type=float, default=0.5)
-    
+
     parser.add_argument('--n-steps', type=int, default=32)
     parser.add_argument('--n-workers', type=int, default=4)
-    
+
     parser.add_argument('--use-gae', action='store_true', default=False)
-    
+
     parser.add_argument('--clipping', type=float, default=0.2)
     parser.add_argument('--use-clipped', action='store_true', default=True)
     parser.add_argument('--ppo-epoch', type=int, default=4)
     parser.add_argument('--n-minibatch', type=int, default=32)
-    
+
     parser.add_argument('--seed', default=None)
 
     parser.add_argument('--use-stl', action='store_true', default=False)
@@ -114,6 +124,9 @@ def parse_args():
     parser.add_argument('--load', default=None)
 
     args = parser.parse_args()
+    if args.eval and args.load is None:
+        parser.error('--eval mode requires providing --load state dict')
+
     config = dict(
         env_id=args.env_id,
         name=args.name,
@@ -200,7 +213,6 @@ def run_training(conf):
 def run_eval(conf):
     env_id = conf['env_id']
     name = conf['name']
-    maximum_steps = conf['maximum_steps']
     n_eval_episodes = conf['n_eval_episodes']
     render = conf['render']
     save_dir = conf['save_dir']
@@ -208,6 +220,7 @@ def run_eval(conf):
     backup_interval = conf['backup_interval']
     device = conf['device']
     seed = conf['seed']
+    load = conf['load']
 
     now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     trial_dir = os.path.join(save_dir, name)
@@ -219,12 +232,16 @@ def run_eval(conf):
     agent.attach(EpisodicCheckpointSaver(check_dir, interval=backup_interval))
     set_global_seed(seed)
 
-    data = agent.run_training(maximum_steps, render=render)
+    data = agent.eval_episode(render=render, seed=seed, load=load)
     if data is not None:
         df = pd.DataFrame(data)
         now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        mon_csv = os.path.join(trial_dir, now + '.monitor.csv')
+        mon_csv = os.path.join(trial_dir, now + '.eval.csv')
         df.to_csv(mon_csv, header=False)
 
+
 if __name__ == "__main__":
-    run_training(parse_args())
+    conf = parse_args()
+    if conf['eval']:
+        run_eval(conf)
+    run_training(conf)
