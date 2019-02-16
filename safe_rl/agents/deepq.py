@@ -168,7 +168,7 @@ class DQN(BaseAgent):
         self.broadcast(Event.END_LEARN)
 
     def to(self, torch_device):
-        self.device = torch_device
+        self._device = torch_device
         self.policy_net.to(torch_device)
         if self.hyp['target_net']:
             self.target_net.to(torch_device)
@@ -186,7 +186,10 @@ class DQN(BaseAgent):
                 self.epsilon,
                 width=len(str(n_episodes))))
         self.broadcast(Event.END_TRAINING)
-        return self.episode_durations, self.episode_rewards
+        return dict(
+            durations=self.episode_durations,
+            total_rewards=self.episode_rewards
+        )
 
     def train_episode(self, render=False):
         self.broadcast(Event.BEGIN_EPISODE)

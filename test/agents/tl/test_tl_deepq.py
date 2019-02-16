@@ -70,7 +70,7 @@ def gen_agent(conf):
 def test_cartpole_deepq_uniform_notargetfix_stl():
     hyp = dict()
     config = AGENT_CONFIG.copy()
-    config['name'] = 'cartpole/stl/deepq_uniform_notargetfix'
+    config['name'] = 'CartPole-v1/DeepQ/Uniform-NoFixedTarget/STL'
     config['hyperparams'].update(hyp)
     trial_runner(gen_agent, config)
 
@@ -80,7 +80,7 @@ def test_cartpole_deepq_uniform_doubleq_stl():
         double_q=True,
     )
     config = AGENT_CONFIG.copy()
-    config['name'] = 'cartpole/stl/deepq_uniform_doubleq'
+    config['name'] = 'CartPole-v1/DeepQ/Uniform-DoubleQ/STL'
     config['hyperparams'].update(hyp)
     trial_runner(gen_agent, config)
 

@@ -1,21 +1,20 @@
+import argparse
 import copy
 import os
 from datetime import datetime
-import argparse
 
 import pandas as pd
 import torch
 import torch.nn as nn
 
-from safe_rl.agents.ppo import PPO
 import temporal_logic.signal_tl as stl
-from temporal_logic.signal_tl.semantics import FilteringMonitor, EfficientRobustnessMonitor
-
 from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
-from safe_rl.observers.multi_proc_stl import MultiProcSTLRewarder
 from safe_rl.observers.checkpoints import EpisodicCheckpointSaver
+from safe_rl.observers.multi_proc_stl import MultiProcSTLRewarder
 from safe_rl.utils.general import set_global_seed
+from temporal_logic.signal_tl.semantics import (EfficientRobustnessMonitor,
+                                                FilteringMonitor)
 
 SIGNALS = (
     'hull_angle',

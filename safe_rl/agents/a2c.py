@@ -92,7 +92,7 @@ class A2C(BaseAgent):
         print('Number of rollouts: {}'.format(len(ret)))
         print('Number of rollouts: {} ^'.format(max_steps))
         max_steps = min(max_steps, len(ret))
-        return np.arange(max_steps), ret
+        return dict(frames=np.arange(max_steps), mean_returns=ret)
 
     def act(self, state_vec, deterministic=False):
         state_vec = self._get_tensor(state_vec)
@@ -188,8 +188,8 @@ class A2C(BaseAgent):
         while not done:
             if render:
                 env.render()
-            action = self.act(state)
-            obs, rew, done, _ = self.env.step(action)
+            _, action, _ = self.act(state)
+            obs, rew, done, _ = env.step(action)
             rewards.append(np.squeeze(rewards))
             states.append(np.reshape(state, -1))
             state = obs
