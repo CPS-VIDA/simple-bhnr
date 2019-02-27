@@ -10,7 +10,7 @@ import torch.optim as optim
 
 from safe_rl.core.agent import BaseAgent
 
-from safe_rl.utils.general import make_env
+from safe_rl.utils.general import make_env, make_vec_env
 from safe_rl.core.observers import Event
 from safe_rl.envs import SubprocVecEnv, DummyVecEnv
 from safe_rl.models.ac import ActorCritic
@@ -68,11 +68,7 @@ class A2C(BaseAgent):
         self.to(self.device)
 
     def _init_env(self):
-        envs = [make_env(self.env_id, self._seed, i) for i in range(self.hyp['n_workers'])]
-        if len(envs) > 1:
-            self.env = SubprocVecEnv(envs)
-        else:
-            self.env = DummyVecEnv(envs)
+        self.env = make_vec_env(self.env_id, self._seed, self.hyp['n_workers'])
 
     def run_training(self, total_steps, render=False):
         num_updates = total_steps // self.n_steps // self.n_workers
@@ -104,7 +100,8 @@ class A2C(BaseAgent):
         )
 
     def observe(self, state, action, reward, next_state, done, action_log_prob, value_pred):
-        transition_list = ACTransition(state, action, reward, next_state, done, action_log_prob, value_pred, reward)
+        transition_list = ACTransition(
+            state, action, reward, next_state, done, action_log_prob, value_pred, reward)
         transitions = [ACTransition(*t) for t in zip(*transition_list)]
         self.memory.push(transitions)
 
@@ -118,17 +115,21 @@ class A2C(BaseAgent):
             self.observe(states, action, rew, obs, done, action_log_prob, val)
             states = obs
             self.broadcast(Event.STEP)
-        next_vals = self.policy_net(self._get_tensor(states))[0].detach().cpu().numpy()
+        next_vals = self.policy_net(self._get_tensor(states))[
+            0].detach().cpu().numpy()
         self.broadcast(Event.SYNC)
         print('SYNC', end=' --> ')
-        self.memory.compute_returns(next_vals, self.use_gae, self.gamma, self.tau)
+        self.memory.compute_returns(
+            next_vals, self.use_gae, self.gamma, self.tau)
         return states
 
     def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
-        next_state_batch = torch.cat(tuple(self._get_tensor(unroll_pre.next_state)))
+        next_state_batch = torch.cat(
+            tuple(self._get_tensor(unroll_pre.next_state)))
         action_batch = torch.cat(tuple(self._get_tensor(unroll_pre.action)))
-        returns_batch = torch.cat(tuple(self._get_tensor(unroll_pre.returns))).squeeze()
+        returns_batch = torch.cat(
+            tuple(self._get_tensor(unroll_pre.returns))).squeeze()
 
         msr = np.array(unroll_pre.reward).mean(axis=0)
         sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
@@ -141,7 +142,8 @@ class A2C(BaseAgent):
             action_batch,
         )
         # TODO: The tutorial reshapes the tensors. But we really don't need it I think
-        self.learn(returns_batch, vals.squeeze(), action_log_probs, dist_entropy)
+        self.learn(returns_batch, vals.squeeze(),
+                   action_log_probs, dist_entropy)
 
     def learn(self, expected_vals, vals, action_log_prob, dist_entropy):
         self.broadcast(Event.BEGIN_LEARN)
@@ -153,7 +155,8 @@ class A2C(BaseAgent):
         loss = v_loss * self.value_loss_coef + a_loss - dist_entropy * self.entropy_coef
         loss.backward()
 
-        nn.utils.clip_grad_norm_(self.policy_net.parameters(), self.max_grad_norm)
+        nn.utils.clip_grad_norm_(
+            self.policy_net.parameters(), self.max_grad_norm)
 
         self.optimizer.step()
         self.broadcast(Event.END_LEARN)

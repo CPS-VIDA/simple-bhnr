@@ -4,6 +4,9 @@ import random
 
 import gym
 
+from safe_rl.envs import SubprocVecEnv, DummyVecEnv
+import vrep_gym
+
 
 def set_global_seed(seed):
     if seed is not None:
@@ -17,16 +20,25 @@ def set_global_seed(seed):
 def make_env(env_id, seed, rank):
     def _thunk():
         env = gym.make(env_id)
-        # is_atari = hasattr(gym.envs, 'atari') and isinstance(env.unwrapped, gym.envs.atari.atari_env.AtariEnv)
-        # if is_atari:
-        #     env = make_atari(env_id)
         if seed is not None:
             env.seed(int(seed) + rank)
         else:
             env.seed(seed)
-        # if is_atari:
-        #     env = wrap_deepmind(env)
-        #     env = WrapPyTorch(env)
         return env
 
     return _thunk
+
+
+def make_vec_env(env_id, seed, num_envs):
+    def _make_env(_rank):
+        def _thunk():
+            env = gym.make(env_id)
+            if seed is not None:
+                env.seed(int(seed) + _rank)
+            else:
+                env.seed(seed)
+            return env
+        return _thunk
+
+    envs = [_make_env(i) for i in range(num_envs)]
+    return DummyVecEnv(envs)

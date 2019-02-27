@@ -5,20 +5,20 @@ description = "A package that enables performing Safe RL experiiments"
 authors = ["Anand Balakrishnan <anandbal@usc.edu>"]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 torch = "^1.0"
 gym = { version = "^0.11.0", extras = [ "box2d"] }
 pandas = "^0.24.1"
 
-temporal_logic = { git = "https://github.com/anand-bala/tl-py", tag="v0.1.2"}
 cloudpickle = "^0.7.0"
+
+temporal_logic = { git = "https://github.com/anand-bala/tl-py", tag="v0.1.3"}
+vrep-gym = {git = "https://github.com/anand-bala/vrep-gym", branch="master"}
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.2"
-yapf = "^0.26.0"
 rope = "^0.12.0"
-pytype = "^2019.1"
-
+autopep8 = "^1.4"
 
 [build-system]
 requires = ["poetry>=0.12"]
