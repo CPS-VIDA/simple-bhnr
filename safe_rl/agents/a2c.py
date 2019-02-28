@@ -18,6 +18,10 @@ from safe_rl.core.memory import ACTransition
 from safe_rl.memory.rollout import MultiProcRolloutMemory
 
 
+import logging
+log = logging.getLogger(__name__)
+
+
 class A2C(BaseAgent):
     default_hyperparams = dict(
         gamma=0.95,
@@ -72,10 +76,11 @@ class A2C(BaseAgent):
 
     def run_training(self, total_steps, render=False):
         num_updates = total_steps // self.n_steps // self.n_workers
-        print('Number of updates to run: {}'.format(num_updates))
+        log.info('Number of updates to run: {}'.format(num_updates))
         self.broadcast(Event.BEGIN_TRAINING)
         states = self.env.reset()
         for epoch in range(num_updates):
+            log.info('Begin rollout simulation #{}'.format(epoch))
             self.broadcast(Event.BEGIN_EPISODE)
             states = self.rollout(states, render)
             self.process_rollout()
@@ -85,8 +90,8 @@ class A2C(BaseAgent):
 
         max_steps = total_steps // self.n_workers
         ret = np.array(self.mean_step_rewards)[:max_steps]
-        print('Number of rollouts: {}'.format(len(ret)))
-        print('Number of rollouts: {} ^'.format(max_steps))
+        log.debug('Number of rollouts: {}'.format(len(ret)))
+        log.debug('Number of rollouts: {} ^'.format(max_steps))
         max_steps = min(max_steps, len(ret))
         return dict(frames=np.arange(max_steps), mean_returns=ret)
 
@@ -106,7 +111,6 @@ class A2C(BaseAgent):
         self.memory.push(transitions)
 
     def rollout(self, states, render=False):
-        print('Perform rollout', end=' --> ')
         for step in range(self.n_steps):
             if render:
                 self.env.render()
@@ -118,7 +122,6 @@ class A2C(BaseAgent):
         next_vals = self.policy_net(self._get_tensor(states))[
             0].detach().cpu().numpy()
         self.broadcast(Event.SYNC)
-        print('SYNC', end=' --> ')
         self.memory.compute_returns(
             next_vals, self.use_gae, self.gamma, self.tau)
         return states
@@ -133,7 +136,7 @@ class A2C(BaseAgent):
 
         msr = np.array(unroll_pre.reward).mean(axis=0)
         sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
-        print('Mean Step Return: {}'.format(sum_ret))
+        log.info('Mean Step Return: {}'.format(sum_ret))
         self.mean_step_rewards.extend(msr)
         self.episode_rewards += np.array(unroll_pre.reward).sum(axis=1)
 

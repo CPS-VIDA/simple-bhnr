@@ -20,6 +20,10 @@ from safe_rl.core.memory import ACTransition
 from safe_rl.memory.rollout import MultiProcRolloutMemory
 
 
+import logging
+log = logging.getLogger(__name__)
+
+
 class PPO(A2C):
     default_hyperparams = dict(A2C.default_hyperparams)
     default_hyperparams.update(dict(
@@ -45,20 +49,22 @@ class PPO(A2C):
 
     def process_rollout(self):
         unroll_pre = ACTransition(*zip(*self.memory.sample(size=-1)))
-        print('DEBUG: REW = {}'.format(unroll_pre.reward))
+        log.debug('Rewards = {}'.format(unroll_pre.reward))
         rew = np.array(unroll_pre.reward)
-        print('DEBUG: REW = {}'.format(rew))
+        log.debug('Rewards = {}'.format(unroll_pre.reward))
         msr = rew.mean(axis=0)
         sum_ret = np.array(unroll_pre.returns).mean(axis=0).sum()
-        print('Mean Step Return: {}'.format(sum_ret))
+        log.info('Mean Step Return: {}'.format(sum_ret))
 
         self.mean_step_rewards.extend(msr)
         self.episode_rewards += np.array(unroll_pre.reward).sum(axis=1)
 
         returns = torch.cat(tuple(torch.tensor(unroll_pre.returns))).squeeze()
-        value_preds = torch.cat(tuple(torch.tensor(unroll_pre.value_pred))).squeeze()
+        value_preds = torch.cat(
+            tuple(torch.tensor(unroll_pre.value_pred))).squeeze()
         advantages = returns - value_preds
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-5)
+        advantages = (advantages - advantages.mean()) / \
+            (advantages.std() + 1e-5)
         advantages = advantages.detach().cpu().numpy()
 
         value_loss_epoch = 0
@@ -66,7 +72,8 @@ class PPO(A2C):
         dist_entropy_epoch = 0
 
         for e in range(self.ppo_epochs):
-            data_gen = self.memory.ppo_sample_generator(advantages, self.n_minibatch)
+            data_gen = self.memory.ppo_sample_generator(
+                advantages, self.n_minibatch)
             for sample in data_gen:
                 obss = self._get_tensor(sample.next_state)
                 acts = self._get_tensor(sample.action)
@@ -76,25 +83,30 @@ class PPO(A2C):
                 adv = self._get_tensor(sample.advantage).view(-1, 1)
                 dones = self._get_tensor(sample.done, torch.uint8)
 
-                values, action_log_probs, dist_entropy = self.policy_net.evaluate_actions(obss, acts)
+                values, action_log_probs, dist_entropy = self.policy_net.evaluate_actions(
+                    obss, acts)
 
                 ratio = torch.exp(action_log_probs - alp)
                 surr1 = ratio * adv
-                surr2 = torch.clamp(ratio, 1.0 - self.clipping, 1.0 + self.clipping) * adv
+                surr2 = torch.clamp(ratio, 1.0 - self.clipping,
+                                    1.0 + self.clipping) * adv
                 a_loss = -torch.min(surr1, surr2).mean()
 
                 if self.use_clipped_value_loss:
                     value_pred_clipped = val_p + \
-                                         (values - val_p).clamp(-self.clipping, self.clipping)
+                        (values - val_p).clamp(-self.clipping, self.clipping)
                     value_losses = (values - rets).pow(2)
                     value_losses_clipped = (value_pred_clipped - rets).pow(2)
-                    value_loss = 0.5 * torch.max(value_losses, value_losses_clipped).mean()
+                    value_loss = 0.5 * \
+                        torch.max(value_losses, value_losses_clipped).mean()
                 else:
                     value_loss = 0.5 * (rets - values).pow(2).mean()
 
                 self.optimizer.zero_grad()
-                (value_loss * self.value_loss_coef + a_loss - dist_entropy * self.entropy_coef).backward()
-                nn.utils.clip_grad_norm_(self.policy_net.parameters(), self.max_grad_norm)
+                (value_loss * self.value_loss_coef + a_loss -
+                 dist_entropy * self.entropy_coef).backward()
+                nn.utils.clip_grad_norm_(
+                    self.policy_net.parameters(), self.max_grad_norm)
                 self.optimizer.step()
 
                 value_loss_epoch += value_loss.item()

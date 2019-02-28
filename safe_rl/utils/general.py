@@ -7,6 +7,9 @@ import gym
 from safe_rl.envs import SubprocVecEnv, DummyVecEnv
 import vrep_gym
 
+import atexit
+
+
 
 def set_global_seed(seed):
     if seed is not None:

@@ -14,6 +14,9 @@ from safe_rl.memory import (PrioritizedMemory, QTransition, Transition,
                             UniformReplay)
 from safe_rl.observers import EpsilonGreedyUpdater, TargetUpdater
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class DQN(BaseAgent):
     default_hyperparams = dict(
@@ -101,7 +104,7 @@ class DQN(BaseAgent):
 
     def act(self, state, deterministic=False):
         if not deterministic and \
-            self.epsilon_greedy and np.random.rand() <= self.epsilon:
+                self.epsilon_greedy and np.random.rand() <= self.epsilon:
             return self.action_space.sample()
         with torch.no_grad():
             s = self._get_tensor(state).unsqueeze(0)
@@ -178,7 +181,7 @@ class DQN(BaseAgent):
         for ep in range(n_episodes):
             self.train_episode(render)
             duration, total_reward = self.episode_durations[-1], self.episode_rewards[-1]
-            print('[{:{width}d}/{:d}] Duration: {:6d}, Score: {:6.2f}, Epsilon: {:.2f}'.format(
+            log.info('[{:{width}d}/{:d}] Duration: {:6d}, Score: {:6.2f}, Epsilon: {:.2f}'.format(
                 ep,
                 n_episodes,
                 duration,
@@ -233,18 +236,17 @@ class DQN(BaseAgent):
                 env.render()
             action = self.act(state)
             obs, rew, done, _ = env.step(action)
-            print('.', end='')
             rewards.append(rewards)
             states.append(state)
             state = obs
-        print('')
         return (states, rewards)
 
     def save_net(self, filepath):
         torch.save(self.policy_net.state_dict(), filepath)
 
     def load_net(self, filepath):
-        self.policy_net.load_state_dict(torch.load(filepath, map_location='cpu'))
+        self.policy_net.load_state_dict(
+            torch.load(filepath, map_location='cpu'))
 
     def eval(self):
         self.policy_net.eval()

@@ -18,6 +18,11 @@ from temporal_logic.signal_tl.semantics import (EfficientRobustnessMonitor,
 
 from safe_rl.specs import get_spec
 
+import logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PPO')
@@ -114,8 +119,8 @@ def gen_agent(conf):
     # net = copy.deepcopy(conf.pop('net'))
     hyp = conf.pop('hyperparams')
     agent = PPO(env_id, hyp, **conf)
-    spec, signals = get_spec(env_id)
     if conf['use_stl']:
+        spec, signals = get_spec(env_id)
         monitor = FilteringMonitor(spec, signals)
         n_steps = hyp['n_steps']
         n_workers = hyp['n_workers']
