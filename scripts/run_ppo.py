@@ -21,7 +21,7 @@ from safe_rl.specs import get_spec
 import logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO)
+    level=logging.DEBUG)
 
 
 def parse_args():
@@ -120,8 +120,8 @@ def gen_agent(conf):
     hyp = conf.pop('hyperparams')
     agent = PPO(env_id, hyp, **conf)
     if conf['use_stl']:
-        spec, signals = get_spec(env_id)
-        monitor = FilteringMonitor(spec, signals)
+        spec, signals, monitor = get_spec(env_id)
+        monitor = monitor(spec, signals)
         n_steps = hyp['n_steps']
         n_workers = hyp['n_workers']
         agent.attach(MultiProcSTLRewarder(n_steps, n_workers, monitor))
@@ -138,7 +138,7 @@ def run_training(conf):
     backup_dir = conf['backup_dir']
     backup_interval = conf['backup_interval']
     device = conf['device']
-    seed = conf['seed']
+    seed = int(conf['seed'])
 
     now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     trial_dir = os.path.join(save_dir, name)

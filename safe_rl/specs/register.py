@@ -2,8 +2,8 @@
 SPEC_REGISTRY = dict()
 
 
-def register(env_id, spec, signals):
-    SPEC_REGISTRY[env_id] = (spec, signals)
+def register(env_id, spec, signals, monitor):
+    SPEC_REGISTRY[env_id] = (spec, signals, monitor)
 
 
 def get_spec(env_id):

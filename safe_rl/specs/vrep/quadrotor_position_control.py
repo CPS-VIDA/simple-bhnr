@@ -8,8 +8,8 @@ import temporal_logic.signal_tl as stl
 SIGNALS = (
     'x_d', 'y_d', 'z_d',
     'roll_d', 'pitch_d', 'yaw_d',
-    r'\dot{x_d}', r'\dot{y}_d', r'\dot{z}_d',
-    r'\dot{roll}_d', r'\dot{pitch}_d', r'\dot{yaw}_d',
+    'dot_x', 'dot_y', 'dot_z',
+    'dot_roll_d', 'dot_pitch_d', 'dot_yaw_d',
     'x_g', 'y_g', 'z_g',
     'collision'
 )
@@ -42,9 +42,19 @@ ANGLE_CONSTRAINT = (
 ANGULAR_VEL_CONSTRAINT = stl.Predicate(drone_av.norm() <= np.deg2rad(5))
 
 
+# SPEC = stl.G(                   # Always do the following:
+#     stl.F(POSITION_SPEC)        # Head towards goal position
+#     & ANGLE_CONSTRAINT          # Keep the angles constrained
+#     & ANGULAR_VEL_CONSTRAINT    # COnstrain the angular velocity
+#     & GOAL_VELOCITY_SPEC        # Minimize drift once you reach goal
+#     & (1000 * collision < 1000)
+# )
+
 SPEC = stl.G(                   # Always do the following:
     stl.F(POSITION_SPEC)        # Head towards goal position
-    & ANGLE_CONSTRAINT          # Keep the angles constrained
-    & ANGULAR_VEL_CONSTRAINT    # COnstrain the angular velocity
-    & GOAL_VELOCITY_SPEC        # Minimize drift once you reach goal
+    # & ANGLE_CONSTRAINT          # Keep the angles constrained
+    # & ANGULAR_VEL_CONSTRAINT    # COnstrain the angular velocity
+    # & GOAL_VELOCITY_SPEC        # Minimize drift once you reach goal
+    & (1000 * collision < 1000)
 )
+
