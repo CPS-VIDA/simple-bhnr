@@ -44,4 +44,6 @@ def make_vec_env(env_id, seed, num_envs):
         return _thunk
 
     envs = [_make_env(i) for i in range(num_envs)]
+    if len(envs) > 1:
+        return SubprocVecEnv(envs)
     return DummyVecEnv(envs)

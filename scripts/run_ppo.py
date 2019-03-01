@@ -21,7 +21,7 @@ from safe_rl.specs import get_spec
 import logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+    level=logging.INFO)
 
 
 def parse_args():
@@ -138,7 +138,7 @@ def run_training(conf):
     backup_dir = conf['backup_dir']
     backup_interval = conf['backup_interval']
     device = conf['device']
-    seed = int(conf['seed'])
+    seed = None if conf['seed'] is None else int(conf['seed'])
 
     now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     trial_dir = os.path.join(save_dir, name)
