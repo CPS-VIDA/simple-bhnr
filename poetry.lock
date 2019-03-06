@@ -446,6 +446,7 @@ sympy = "^1.3"
 reference = "v0.1.3"
 type = "git"
 url = "https://github.com/anand-bala/tl-py"
+
 [[package]]
 category = "main"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
@@ -499,7 +500,7 @@ version = "0.0.0"
 pyzmq = "*"
 
 [metadata]
-content-hash = "42aac4f3616644d17bf7ce6ec78f935b618206b63608f96f2fc75d5d45aa651d"
+content-hash = "dd547773360d46307ba3b1c28535224752b6a44e8103b231c801971297d658e1"
 python-versions = "^3.6"
 
 [metadata.hashes]
