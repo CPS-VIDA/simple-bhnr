@@ -42,7 +42,7 @@ ANGLE_CONSTRAINT = (
 )
 
 # Minimize magnitude of angular velocity to <= 5deg/s
-ANGULAR_VEL_CONSTRAINT = stl.Predicate(drone_av.norm() <= np.deg2rad(5))
+ANGULAR_VEL_CONSTRAINT = stl.Predicate(drone_av.norm() <= np.deg2rad(2.5))
 
 
 # SPEC = stl.G(                   # Always do the following:

@@ -7,6 +7,8 @@ import pandas as pd
 import torch
 import torch.nn as nn
 
+import drone_gym
+
 import temporal_logic.signal_tl as stl
 from safe_rl.agents.ppo import PPO
 from safe_rl.experiments.trial import trial_runner
@@ -19,6 +21,7 @@ from temporal_logic.signal_tl.semantics import (EfficientRobustnessMonitor,
 from safe_rl.specs import get_spec
 
 import logging
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
@@ -119,6 +122,8 @@ def gen_agent(conf):
     # net = copy.deepcopy(conf.pop('net'))
     hyp = conf.pop('hyperparams')
     agent = PPO(env_id, hyp, **conf)
+    if conf['load']:
+        agent.load_net(conf['load'])
     if conf['use_stl']:
         spec, signals, monitor = get_spec(env_id)
         monitor = monitor(spec, signals)

@@ -4,11 +4,9 @@ import random
 
 import gym
 
-from safe_rl.envs import SubprocVecEnv, DummyVecEnv
-import vrep_gym
+from stable_baselines.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 import atexit
-
 
 
 def set_global_seed(seed):
@@ -41,6 +39,7 @@ def make_vec_env(env_id, seed, num_envs):
             else:
                 env.seed(seed)
             return env
+
         return _thunk
 
     envs = [_make_env(i) for i in range(num_envs)]
