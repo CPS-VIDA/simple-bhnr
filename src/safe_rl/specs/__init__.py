@@ -18,13 +18,4 @@ register('BipedalWalker-v2',
          FilteringMonitor)
 
 
-register('VREPQuadrotorPositionControlEnv-v0',
-         quadrotor_position_control.SPEC,
-         quadrotor_position_control.SIGNALS,
-         EfficientRobustnessMonitor)
-
-register('SimpleQuadrotorPositionControlEnv-v0',
-         quadrotor_position_control.SPEC,
-         quadrotor_position_control.SIGNALS,
-         EfficientRobustnessMonitor)
 

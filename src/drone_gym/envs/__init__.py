@@ -1,3 +1,0 @@
-from .simple import QuadrotorPositionControlEnv as SimpleQuadrotorPositionControlEnv
-
-from .vrep import QuadrotorPositionControl as VREPQuadrotorPositionControlEnv
